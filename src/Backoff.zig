@@ -16,7 +16,7 @@ num_tries: u64 = 0,
 random_factor: f64 = 0.5,
 multiplier: f64 = 1.5,
 
-random: std.rand.Random,
+random: std.Random,
 
 pub fn init(self: *Backoff) !void {
     self.timer = try std.time.Timer.start();
@@ -52,7 +52,11 @@ pub fn next(self: *Backoff) ?u64 {
 }
 
 test "basic" {
-    var prng = std.rand.DefaultPrng.init(0);
+    var prng = std.Random.DefaultPrng.init(blk: {
+        var seed: u64 = undefined;
+        try std.posix.getrandom(std.mem.asBytes(&seed));
+        break :blk seed;
+    });
 
     var backoff = Backoff{
         .max_interval = 5 * std.time.ns_per_s,
@@ -77,7 +81,11 @@ test "basic" {
 }
 
 test "custom_stop_time" {
-    var prng = std.rand.DefaultPrng.init(0);
+    var prng = std.Random.DefaultPrng.init(blk: {
+        var seed: u64 = undefined;
+        try std.posix.getrandom(std.mem.asBytes(&seed));
+        break :blk seed;
+    });
 
     var backoff = Backoff{
         .max_elapsed_time = std.time.ns_per_us,
@@ -91,7 +99,11 @@ test "custom_stop_time" {
 }
 
 test "custom_max_tries" {
-    var prng = std.rand.DefaultPrng.init(0);
+    var prng = std.Random.DefaultPrng.init(blk: {
+        var seed: u64 = undefined;
+        try std.posix.getrandom(std.mem.asBytes(&seed));
+        break :blk seed;
+    });
 
     var backoff = Backoff{
         .random = prng.random(),
@@ -108,7 +120,11 @@ test "custom_max_tries" {
 }
 
 test "interval_bound_overflow" {
-    var prng = std.rand.DefaultPrng.init(0);
+    var prng = std.Random.DefaultPrng.init(blk: {
+        var seed: u64 = undefined;
+        try std.posix.getrandom(std.mem.asBytes(&seed));
+        break :blk seed;
+    });
 
     var backoff = Backoff{
         .cur_interval = std.math.maxInt(i64) / 2,
